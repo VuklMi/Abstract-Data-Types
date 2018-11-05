@@ -78,7 +78,7 @@ void QueueA<T>::push(T const &obj) {
 		throw overflow();
 		//double_capacity();
 	}
-	iback = ++iback % array_capacity;		// CLEVER!
+	iback = ++iback % array_capacity;
 	array[iback] = obj;
 	++queue_size;
 }
