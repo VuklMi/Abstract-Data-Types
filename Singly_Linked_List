@@ -1,0 +1,457 @@
+// Header file for the List class
+// Michaela Vuklisevicova
+
+#ifndef LIST_H
+#define LIST_H
+
+#include <iostream>  // For cout
+using namespace std;
+
+template<typename T>
+class List
+{
+private:
+
+	class underflow {
+		// empty body
+	};
+
+	template<typename T1>
+	class ListNode
+	{
+		public:
+		T1 value;           			// The value in this node
+		ListNode<T1> *next;  			// To point to the next node
+
+		// constructor
+		ListNode<T1>(T1 const v = T1(), ListNode<T1> *n = nullptr)
+			: value(v), next(n)
+		{
+		}
+	};
+
+	ListNode<T> *head;			// List head pointer
+	ListNode<T> *tail;			// List tail pointer
+
+public:
+	// default Constructor
+	List()
+	{
+		head = nullptr;
+		tail = nullptr;
+	}
+	// copy constructor
+	List<T>(List<T> const &);
+	
+	// Destructor
+	~List();
+
+	// Linked list operations
+	void insertNode(T);
+	void deleteNode(T);
+	void displayList() const;
+	void insertNodeAt(int, T);
+	T front() const;
+	T back() const;
+	ListNode<T> *begin() const;
+	ListNode<T> *end() const;
+	void push_front(T);
+	void push_back(T);
+	T pop_front();
+	T pop_back();
+	bool empty() const;
+	void reverse();
+	int size() const;
+	int count(T const);
+	int erase(const T);
+	void insertionSort();
+};
+
+/***************************************************************/
+/********************** IMPLEMENTATION *************************/
+/***************************************************************/
+
+template<typename T>
+List<T>::List(List<T> const &list)
+		:head(nullptr), tail(nullptr) {
+		for (ListNode<T> *ptr = list.begin(); ptr; ptr = ptr->next)
+		{
+			push_back(ptr->value);
+		}
+	}
+	
+template<typename T>
+bool List<T>::empty() const {
+	return (!head);
+}
+
+template<typename T>
+List<T>::ListNode<T>* List<T>::begin() const {
+	return head;
+}
+
+template<typename T>
+List<T>::ListNode<T>* List<T>::end() const {
+	return tail;
+}
+
+template<typename T>
+T List<T>::front() const {
+	if (empty()) {
+		throw underflow();
+	}
+	return begin()->value;
+}
+
+template<typename T>
+T List<T>::back() const {
+	if (empty()) {
+		throw underflow();
+	}
+	return end()->value;
+}
+
+template<typename T>
+void List<T>::push_front(T x) {
+	head = new ListNode<T>(x, begin());
+	if (!end()) {
+		tail = head;
+	}
+}
+
+template<typename T>
+T List<T>::pop_front() {
+	if (empty()) {
+		throw underflow();
+	}
+	
+	T e = front();
+	ListNode<T> *nodePtr = begin();
+	head = begin()->next;
+	delete nodePtr;
+	return e;
+}
+
+template<typename T>
+void List<T>::push_back(T num)
+{
+	if(!begin()) {
+		push_front(num);
+	}
+	else {
+		end()->next = new ListNode<T>(num, nullptr);
+		tail = end()->next;
+	}
+}
+
+template<typename T>
+T List<T>::pop_back() {
+	T e = 0.0;
+	if (empty()) {
+		throw underflow();
+	}
+	else {
+		ListNode<T> *nodePtr;  // To move through the list
+		ListNode<T> *previous;
+						
+		nodePtr = head;	// Initialize nodePtr to head of list.
+
+		// Find the last node in the list.
+		while (nodePtr->next) {
+			previous = nodePtr;
+			nodePtr = nodePtr->next; 
+		}
+		
+		previous->next = nullptr;
+		tail = previous;
+		e = nodePtr->value;
+
+		// delete the last node.
+		delete nodePtr;
+	}
+	return e;
+}
+
+template<typename T>
+int List<T>::size() const {
+	int counter = 0;
+	for (ListNode<T> *ptr = begin(); ptr; ptr = ptr->next)
+	{
+		counter++;
+	}
+	return counter;
+}
+
+template<typename T>
+int List<T>::count(T const n) {
+	int node_count = 0;
+	for (ListNode<T> *ptr = begin(); ptr; ptr = ptr->next)
+	{
+		node_count += (ptr->value == n);
+	}
+	return node_count;
+}
+
+template<typename T>
+int List<T>::erase(const T n) {
+	int node_count = 0;
+	if (empty()) {
+		throw underflow();
+	}
+	else {
+		for (ListNode<T> *ptr = begin(); ptr; ptr = ptr->next)
+		{
+			if (ptr->value == n) {
+				node_count++;
+			}
+		}
+		for (int i = 0; i < node_count; i++) {
+			deleteNode(n);
+		}
+	}
+	return node_count;
+}
+
+//*************************************************************************
+// Reverse function
+//*************************************************************************
+template<typename T>
+void List<T>::reverse() {
+	if (empty()) {
+		throw underflow();
+	}
+	else {
+		ListNode<T> *previous = begin();
+		ListNode<T> *current = end();
+		for (int i = size(); i > 0; i--) {
+			previous = begin();
+			while (previous->next != current && previous != current) {
+				previous = previous->next;
+			}
+			// IF both pointers point at head
+			if (current == previous) {
+				current->next = nullptr;
+			}
+			else {
+				current->next = previous;
+				current = previous;
+			}
+		}
+		// update the head and tail pointers
+		head = tail;
+		tail = current;
+	}
+}
+/*
+	void List<T>::reverse(List<T> &list) {
+		List<T> tmp;
+		while (!list.empty()) {
+			tmp.push_front(list.pop_front());
+		}
+		swap(list, tmp);
+	}
+*/
+
+
+//**************************************************
+// displayList shows the value                     *
+// stored in each node of the linked list          *
+// pointed to by head.                             *
+//**************************************************
+
+template<typename T>
+void List<T>::displayList() const
+{
+	ListNode<T> *nodePtr = begin();
+
+	while (nodePtr) {
+		cout << nodePtr->value << " ";
+		nodePtr = nodePtr->next;
+	}
+}
+
+//**************************************************
+// The insertNode function inserts a node with     *
+// num copied to its value member.                 *
+//**************************************************
+template<typename T>
+void List<T>::insertNode(T num)
+{
+	ListNode<T> *newNode;					// A new node
+	ListNode<T> *nodePtr;					// To traverse the list
+	ListNode<T> *previousNode = nullptr;	// The previous node
+
+										// Allocate a new node and store num there.
+	newNode = new ListNode<T>;
+	newNode->value = num;
+
+	// If there are no nodes in the list
+	// make newNode the first node
+	if (!head || (head->value > num))
+	{
+		newNode->next = head;
+		head = newNode;
+	}
+	else  // Otherwise, insert newNode
+	{
+		// Position nodePtr at the head of list.
+		nodePtr = head;
+
+		// Initialize previousNode to nullptr.
+		previousNode = nullptr;
+
+		// Skip all nodes whose value is less than num.
+		while (nodePtr != nullptr && nodePtr->value < num)
+		{
+			previousNode = nodePtr;
+			nodePtr = nodePtr->next;
+		}
+		previousNode->next = newNode;
+		newNode->next = nodePtr;
+	}
+}
+
+template<typename T>
+void List<T>::insertNodeAt(int index, T num)
+{
+	ListNode<T> *newNode;					// A new node
+	ListNode<T> *nodePtr = head;
+	ListNode<T> *previousPtr = nullptr;
+
+	newNode = new ListNode<T>;
+	newNode->value = num;
+
+	// If there are no nodes in the list
+	// make newNode the first node
+	if (!head || !index)
+	{
+		newNode->next = head;
+		head = newNode;
+	}
+
+	else {
+		for (int i = 0; i < index && nodePtr; i++)
+		{
+			previousPtr = nodePtr;
+			nodePtr = nodePtr->next;
+		}
+		
+		previousPtr->next = newNode;
+		newNode->next = nodePtr;
+	}
+}
+
+//**************************************************
+// The deleteNode function searches for a node     *
+// with num as its value. The node, if found, is   *
+// deleted from the list and from memory.          *
+//**************************************************
+template<typename T>
+void List<T>::deleteNode(T num)
+{
+	ListNode<T> *nodePtr;       // To traverse the list
+	ListNode<T> *previousNode;  // To point to the previous node
+
+							 // If the list is empty, do nothing.
+	if (!head)
+		return;
+
+	// Determine if the first node is the one.
+	if (head->value == num)
+	{
+		nodePtr = head->next;
+		delete head;
+		head = nodePtr;
+	}
+	else
+	{
+		// Initialize nodePtr to head of list
+		nodePtr = head;
+
+		// Skip all nodes whose value member is 
+		// not equal to num.
+		while (nodePtr != nullptr && nodePtr->value != num)
+		{
+			previousNode = nodePtr;
+			nodePtr = nodePtr->next;
+		}
+
+		// If nodePtr is not at the end of the list, 
+		// link the previous node to the node after
+		// nodePtr, then delete nodePtr.
+		if (nodePtr)
+		{
+			previousNode->next = nodePtr->next;
+			delete nodePtr;
+		}
+	}
+}
+
+//*************************************************************************
+// Insertion Sort
+//*************************************************************************
+template<typename T>
+void List<T>::insertionSort() {
+	if (begin() && begin()->next) {
+		ListNode<T> *unsortedNode = begin()->next;
+		//outer loop
+		while (unsortedNode) {
+			ListNode<T> *nextUnsortedNode = unsortedNode->next;
+	
+			if (begin()->value > unsortedNode->value) {
+				// find last sorted element
+				ListNode<T> *lastSorted = begin();
+				while (lastSorted->next != unsortedNode) {
+					lastSorted = lastSorted->next;
+				}
+				if (unsortedNode == end()) {
+					tail = lastSorted;
+				}
+				lastSorted->next = unsortedNode->next;
+				unsortedNode->next = begin();
+				head = unsortedNode;
+			}
+
+			else {
+				ListNode<T> *previousNode = begin();
+				ListNode<T> *currentNode = begin()->next;
+				// inner loop
+				for (; currentNode->value < unsortedNode->value;
+					previousNode = currentNode, currentNode = currentNode->next) {
+					// empty loop
+				}
+			  
+				if (currentNode != unsortedNode) {
+					if (unsortedNode == end()) {
+						// find last sorted element
+						ListNode<T> *lastSorted = begin();
+						while (lastSorted->next != unsortedNode) {
+							lastSorted = lastSorted->next;
+						}
+						tail = lastSorted;
+					}
+					currentNode->next = unsortedNode->next;
+					previousNode->next = unsortedNode;
+					unsortedNode->next = currentNode;
+				}
+			}
+			
+			unsortedNode = nextUnsortedNode;
+		}
+	}
+}
+
+//**************************************************
+// Destructor                                      *
+// This function deletes every node in the list.   *
+//**************************************************
+template<typename T>
+List<T>::~List()
+{
+	while (!empty())
+	{
+		pop_front();
+	}
+}
+
+#endif
